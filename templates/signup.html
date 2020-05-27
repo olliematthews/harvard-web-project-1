@@ -1,0 +1,35 @@
+{% extends "login_layout.html" %}
+
+{% block title %}
+    Sign Up
+{% endblock %}
+
+{% block pagetitle %}
+    <h1>Sign up for an account</h1>
+{% endblock %}
+
+{% block body %}
+    <form action="{{ url_for('signup') }}" method="post">
+          <div class="form-group">
+            <label for="usrnm">Username:</label>
+            <input type="text" class="form-control" name = "usrnm" id="usrnm" placeholder="Username">
+          </div>
+          <div class="form-group">
+            <label for="pwd">Password:</label>
+            <input type="password" class="form-control" name = "pwd" id="pwd" placeholder="Password">
+          </div>
+          <div class="form-group">
+            <label for="cpwd">Confirm password:</label>
+            <input type="password" class="form-control" name = "cpwd" id="cpwd" placeholder="Confirm password">
+          </div>
+          <div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </div>
+    </form>
+
+    <div>
+      <p>
+        Already have an account? <a href="{{ url_for('login') }}">Sign in here!</a>
+      </p>
+    </div>
+{% endblock %}
