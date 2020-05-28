@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template, request, session
+from flask import Flask, session, render_template, request, session, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -114,6 +114,9 @@ def search_results():
 
     search_results = db.execute("SELECT * FROM books WHERE (lower(isbn) LIKE lower(:search)) OR (lower(title) LIKE lower(:search)) OR (lower(author) LIKE lower(:search)) OR (year = :number)",
     {'search' : '%' + search + '%', 'number' : search_number}).fetchall()
+    print(search_results)
+    search_results.sort(key = lambda x: x[2])
+    print(search_results)
     return render_template("search_results.html", logged_in = not session.get('user_id') is None, search_results = search_results)
 
 @app.route("/book_summaries/<int:book_id>", methods = ["POST", "GET"])
@@ -145,9 +148,35 @@ def book_summary(book_id):
         book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
         reviews = db.execute("SELECT username, stars, review FROM user_reviews JOIN users ON user_reviews.user_id = users.id WHERE book_id = :id",
             {"id": book_id}).fetchall()
-        try:
-            res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbns": book.isbn})
-            goodread_info = res.json()['books'][0]
-        except:
+        res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbns": book.isbn})
+        if res.status_code != 200:
             goodread_info = []
+        else:
+            goodread_info = res.json()['books'][0]
+
         return render_template("book_summary.html", logged_in = True is None, book=book, user_reviews = reviews, reviewed = reviewed, goodread_info = goodread_info, fill_error = fill_error)
+
+@app.route("/api/<string:book_isbn>")
+def api(book_isbn):
+    if db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": book_isbn}).rowcount == 0:
+        return jsonify({'error' : 'Unrecognised ISBN'}), 404
+    else:
+        book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": book_isbn}).fetchone()
+        res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbns": book.isbn})
+
+        if res.status_code != 200:
+            dict = {'title' : book.title,
+                    'author' : book.author,
+                    'year' : book.year,
+                    'isbn' : book.isbn,
+                    'review_count' : 0,
+                    'average_score' : 0}
+        else:
+            goodread_info = res.json()['books'][0]
+            dict = {'title' : book.title,
+                    'author' : book.author,
+                    'year' : book.year,
+                    'isbn' : book.isbn,
+                    'review_count' : goodread_info['ratings_count'],
+                    'average_score' : goodread_info['average_rating']}
+        return jsonify(dict)
