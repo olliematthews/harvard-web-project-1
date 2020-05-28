@@ -113,8 +113,31 @@ def search_results():
     {'search' : '%' + search + '%', 'number' : search_number}).fetchall()
     return render_template("search_results.html", logged_in = not session.get('user_id') is None, search_results = search_results)
 
-@app.route("/book_summaries/<int:book_id>")
+@app.route("/book_summaries/<int:book_id>", methods = ["POST", "GET"])
 def book_summary(book_id):
     """Lists details about a book."""
+    reviewed = not db.execute("SELECT * FROM user_reviews WHERE (user_id = :usrnm) and (book_id = :id)",
+        {'usrnm' : session['user_id'], 'id' : book_id}).rowcount == 0
+    if request.method == 'POST' and not reviewed:
+        stars = request.form.get('rating')
+        print(stars)
+        review = request.form.get('review')
+        db.execute("INSERT INTO user_reviews (book_id, user_id, stars, review) VALUES (:bookid, :userid, :stars, :review)",
+                {'bookid' : book_id, 'userid' : session['user_id'], 'stars' : stars, 'review' : review})
+        db.commit()
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
-    return render_template("book_summary.html", book=book)
+    reviews = db.execute("SELECT username, stars, review FROM user_reviews JOIN users ON user_reviews.user_id = users.id WHERE book_id = :id",
+        {"id": book_id}).fetchall()
+    return render_template("book_summary.html", book=book, user_reviews = reviews, reviewed = reviewed)
+
+# @app.route("/leave_review", methods = [POST])
+# def leave_review():
+#     """Adds review to SQL"""
+#     stars = request.form.get('stars')
+#     review = request.form.get('review')
+#     user = request.form.get('user')
+#     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
+#     reviews = db.execute("SELECT username, stars, review FROM user_reviews JOIN users ON user_reviews.user_id = users.id WHERE book_id = :id", {"id": book_id}).fetchall()
+#     reviewed = db.execute("SELECT * FROM user_reviews JOIN users ON user_reviews.user_id = users.id WHERE (username = :usrnm) and (book_id = :id)",
+#         {'usrnm' : username, 'id' : book.id}).rowcount == 0
+#     return render_template("book_summary.html", book=book, reviews = reviews, reviewed = reviewed)

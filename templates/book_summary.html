@@ -6,15 +6,76 @@
 
 {% block body %}
     <div>
-          <h2>
-            {{ book.title }} by {{ book.author }} ({{ book.year }})
-          </h2>
-          <h5>
-            ISBN is {{ book.isbn }}
-          </h5>
+          <h1>
+            <span class="font-italic">{{ book.title }}</span> by {{ book.author }} (<span class="font-italic">{{ book.year }}</span>)
+          </h1>
+          <h3>
+            ISBN is <span class="font-italic">{{ book.isbn }}</span>
+          </h3>
     </div>
 
-
+    <div>
+      <h5>
+          User Reviews
+      </h5>
+      <div>
+          {% if user_reviews %}
+              {% for review in user_reviews %}
+                  <div>
+                      <p>
+                        <span class="font-weight-bold"><span class="font-italic">{{ review.username }}</span> gave this book {{ review.stars }} stars. They said:</span>
+                      </p>
+                      <p>
+                        {{ review.review }}
+                      </p>
+                  </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-danger"> There are no user reviews for this book. </p>
+            {% endif %}
+      </div>
+      <div>
+        <h5> Leave a review </h5>
+          </div>
+          {% if not reviewed %}
+              <div>
+                <form action="{{ url_for('book_summary', book_id=book.id) }}" method="post">
+                  <div>
+                    <p>How do you rate this book out of 5?</p>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="rating" id="inlineRadio1" value=1>
+                    <label class="form-check-label" for="inlineRadio1">1</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="rating" id="inlineRadio2" value=2>
+                    <label class="form-check-label" for="inlineRadio2">2</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="rating" id="inlineRadio3" value=3>
+                    <label class="form-check-label" for="inlineRadio3">3</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="rating" id="inlineRadio4" value=4>
+                    <label class="form-check-label" for="inlineRadio3">4</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="rating" id="inlineRadio5" value=5>
+                    <label class="form-check-label" for="inlineRadio3">5</label>
+                  </div>
+                  <div>
+                    <label for="comment">Comment:</label>
+                    <textarea class="form-control" rows="5" name="review" id="comment"></textarea>
+                  </div>
+                  <div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                  </div>
+                </form>
+              </div>
+            {% else %}
+              <p class="text-danger">You have already reviewed this book</p>
+            {% endif %}
+      </div>
     <div class="container py-3 mt-3">
       <div class="row">
         <div class="col-md-6">
