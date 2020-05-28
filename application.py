@@ -85,7 +85,7 @@ def signup():
     else:
         return render_template("signup.html", messages=[])
 
-@app.route("/signout", methods=["GET"])
+@app.route("/signout")
 def signout():
     try:
         db.execute("UPDATE users SET logged_in = False where id = :id", {'id' : session['user_id']})
@@ -109,7 +109,12 @@ def search_results():
     except ValueError:
         search_number = None
 
-    search_ids = db.execute("SELECT * FROM books WHERE (lower(isbn) LIKE lower(:search)) OR (lower(title) LIKE lower(:search)) OR (lower(author) LIKE lower(:search)) OR (year = :number)",
+    search_results = db.execute("SELECT * FROM books WHERE (lower(isbn) LIKE lower(:search)) OR (lower(title) LIKE lower(:search)) OR (lower(author) LIKE lower(:search)) OR (year = :number)",
     {'search' : '%' + search + '%', 'number' : search_number}).fetchall()
-    print(search_ids)
-    return render_template("search_results.html", logged_in = not session.get('user_id') is None, search_ids = search_ids)
+    return render_template("search_results.html", logged_in = not session.get('user_id') is None, search_results = search_results)
+
+@app.route("/book_summaries/<int:book_id>")
+def book_summary(book_id):
+    """Lists details about a book."""
+    book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    return render_template("book_summary.html", book=book)

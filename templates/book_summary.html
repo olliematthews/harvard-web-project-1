@@ -1,0 +1,33 @@
+{% extends "general_layout.html" %}
+
+{% block title %}
+    Search
+{% endblock %}
+
+{% block body %}
+    <div>
+          <h2>
+            {{ book.title }} by {{ book.author }} ({{ book.year }})
+          </h2>
+          <h5>
+            ISBN is {{ book.isbn }}
+          </h5>
+    </div>
+
+
+    <div class="container py-3 mt-3">
+      <div class="row">
+        <div class="col-md-6">
+          <form action="{{ url_for('search_results') }}" method="post">
+              <button type="submit" name="search" value="{{ book.author }}" class="btn btn-link">More books by the same author</button>
+          </form>
+        </div>
+        <div class="col-md-6">
+          <form action="{{ url_for('search_results') }}" method="post">
+              <button type="submit" name="search" value="{{ book.year }}" class="btn btn-link">More books published in the same year</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+{% endblock %}
