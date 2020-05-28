@@ -5,22 +5,23 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     </head>
     <body>
+        <div class="container py-3 mt-3">
+            <div class="row">
+                <div class="col-md-11">
+                  <a href="{{ url_for('search') }}">Search for a book<a/>
+                </div>
+                <div class="col-md-1">
+                    {% if logged_in %}
+                      <span class="float-right"><a href="{{ url_for('signout') }}">Sign out</a></span>
+                    {% else %}
+                      <span class="float-right"><a href="{{ url_for('login') }}">Sign in</a></span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
         <div class="container">
-          {% if logged_in %}
-            <p stlye="text-align:right">
-              <a href="{{ url_for('signout') }}">Sign out</a>
-            </p>
-          {% else %}
-            <p stlye="text-align:right">
-              <a href="{{ url_for('login') }}">Sign in</a>
-            </p>
-          {% endif %}
-          {% block pagetitle %}
+          {% block body %}
           {% endblock %}
-            {% for message in messages %}
-              {% endfor %}
-            {% block body %}
-            {% endblock %}
         </div>
     </body>
 </html>

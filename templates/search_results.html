@@ -1,0 +1,19 @@
+{% extends "general_layout.html" %}
+
+{% block title %}
+    Search
+{% endblock %}
+
+{% block body %}
+    {% if search_ids %}
+      <ul>
+        {% for id in search_ids %}
+            <li>
+                {{ id }}
+            </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class='text-danger'>No results found for your search</p>
+    {% endif %}
+{% endblock %}

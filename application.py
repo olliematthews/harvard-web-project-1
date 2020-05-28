@@ -20,8 +20,9 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
-
-
+# Make sure every user is logged route
+db.execute("UPDATE users SET logged_in = False")
+db.commit()
 
 @app.route("/")
 def index():
@@ -44,11 +45,13 @@ def login():
                 db.execute("UPDATE users SET logged_in = True where id = :id", {'id' : user_id})
                 db.commit()
                 session['user_id'] = user_id
-                return render_template("home.html", logged_in = True)
+                return render_template("search.html", logged_in = True)
             else:
                 message = {'fail' : True,
                         'message' : 'Someone is already logged in with this username.'}
                 return render_template("login.html", messages = [message])
+    elif not session.get('user_id') is None:
+        return render_template("search.html", logged_in = True)
     else:
         return render_template("login.html", messages = [])
 
@@ -94,8 +97,19 @@ def signout():
                 'message' : 'Successfully logged out'}
     return render_template("login.html", messages = [message])
 
+@app.route("/search")
+def search():
+    return render_template("search.html", logged_in = not session.get('user_id') is None)
 
-# @app.route("/signup", methods=["POST", "GET"])
-# def home():
-#     print(session.get('user_id'))
-#     render_template("home.html", logged_in = (session.get('user_id') is None))
+@app.route("/search_results", methods=["POST"])
+def search_results():
+    search = request.form.get('search')
+    try:
+        search_number = int(search)
+    except ValueError:
+        search_number = None
+
+    search_ids = db.execute("SELECT * FROM books WHERE (lower(isbn) LIKE lower(:search)) OR (lower(title) LIKE lower(:search)) OR (lower(author) LIKE lower(:search)) OR (year = :number)",
+    {'search' : '%' + search + '%', 'number' : search_number}).fetchall()
+    print(search_ids)
+    return render_template("search_results.html", logged_in = not session.get('user_id') is None, search_ids = search_ids)
