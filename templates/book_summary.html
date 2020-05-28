@@ -6,14 +6,21 @@
 
 {% block body %}
     <div>
-          <h1>
-            <span class="font-italic">{{ book.title }}</span> by {{ book.author }} (<span class="font-italic">{{ book.year }}</span>)
-          </h1>
-          <h3>
-            ISBN is <span class="font-italic">{{ book.isbn }}</span>
-          </h3>
+      <h1>
+        <span class="font-italic">{{ book.title }}</span> by {{ book.author }} (<span class="font-italic">{{ book.year }}</span>)
+      </h1>
+      <h3>
+        ISBN is <span class="font-italic">{{ book.isbn }}</span>
+      </h3>
     </div>
 
+    <div>
+      <h5> GoodReads </h5>
+      {% if goodread_info %}
+        <span class="font-italic">{{ book.title }}</span> has an average score of {{ goodread_info['average_rating'] }} from {{ goodread_info['ratings_count'] }} ratings on GoodReads.
+      {% else %}
+        <p class='text-danger'>{{ book.title }} has no ratings on GoodReads.</p>
+      {% endif %}
     <div>
       <h5>
           User Reviews
@@ -21,13 +28,15 @@
       <div>
           {% if user_reviews %}
               {% for review in user_reviews %}
-                  <div>
+                  <div class="card">
+                    <div class="card-body">
                       <p>
-                        <span class="font-weight-bold"><span class="font-italic">{{ review.username }}</span> gave this book {{ review.stars }} stars. They said:</span>
+                        <span class="font-weight-bold"><span class="font-italic">{{ review.username }}</span> gave this book {{ review.stars }} stars:</span>
                       </p>
                       <p>
-                        {{ review.review }}
+                        <span class="font-italic">"{{ review.review }}"</span>
                       </p>
+                    </div>
                   </div>
                 {% endfor %}
             {% else %}
@@ -38,6 +47,9 @@
         <h5> Leave a review </h5>
           </div>
           {% if not reviewed %}
+            {% if fill_error %}
+              <p class="text-danger">Please give a rating and a review.</p>
+            {% endif %}
               <div>
                 <form action="{{ url_for('book_summary', book_id=book.id) }}" method="post">
                   <div>
